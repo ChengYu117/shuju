@@ -9,12 +9,12 @@ from tqdm import tqdm
 # ==============================================================================
 # --- 输入/输出路径 ---
 # 脚本会自动在当前目录下寻找这两个文件夹
-INPUT_IMAGE_DIR = "original_images/"
-INPUT_MASK_DIR = "original_masks/"
+INPUT_IMAGE_DIR = "pic1/"
+INPUT_MASK_DIR = "masks_2/"
 
 # 脚本会自动创建这两个文件夹来存放增强后的结果
-OUTPUT_IMAGE_DIR = "augmented_data/images/"
-OUTPUT_MASK_DIR = "augmented_data/masks/"
+OUTPUT_IMAGE_DIR = "augmented_images/"
+OUTPUT_MASK_DIR = "augmented_masks/"
 
 # --- 增强参数 ---
 # 为每一张原始图片生成多少张增强后的图片
@@ -87,7 +87,11 @@ def main():
     for filename in tqdm(image_filenames, desc="增强进度"):
         # 构建路径
         img_path = os.path.join(INPUT_IMAGE_DIR, filename)
-        mask_path = os.path.join(INPUT_MASK_DIR, filename)
+
+        # 构建mask路径，并智能处理扩展名不匹配的问题
+        base_name, _ = os.path.splitext(filename)
+        mask_filename = f"{base_name}.png" # 假设mask总是.png格式
+        mask_path = os.path.join(INPUT_MASK_DIR, mask_filename)
 
         # 检查对应的Mask是否存在
         if not os.path.exists(mask_path):
@@ -121,11 +125,12 @@ def main():
 
             # 构建新的文件名
             base_name, extension = os.path.splitext(filename)
-            new_filename = f"{base_name}_aug_{i + 1}{extension}"
+            new_img_filename = f"{base_name}_aug_{i + 1}{extension}"
+            new_mask_filename = f"{base_name}_aug_{i + 1}.png" # 总是将mask保存为png
 
             # 保存新的图像和Mask
-            cv2.imwrite(os.path.join(OUTPUT_IMAGE_DIR, new_filename), aug_image)
-            cv2.imwrite(os.path.join(OUTPUT_MASK_DIR, new_filename), aug_mask)
+            cv2.imwrite(os.path.join(OUTPUT_IMAGE_DIR, new_img_filename), aug_image)
+            cv2.imwrite(os.path.join(OUTPUT_MASK_DIR, new_mask_filename), aug_mask)
 
     print("\n--- 数据增强全部完成！---")
     total_generated = len(image_filenames) * NUM_AUGMENTATIONS_PER_IMAGE
